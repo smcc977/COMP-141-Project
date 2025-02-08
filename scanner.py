@@ -51,8 +51,9 @@ def parseLine(line):
 
             if not resultID and not resultNum and not resultSymbol:
                 tokenList.append((line[count], "Error reading"))
-                startIndex += 1
+                return tokenList
         count += 1
+    return tokenList
 
 if __name__ == "__main__":
     with open(input_file, 'r') as i:
