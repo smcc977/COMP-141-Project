@@ -1,7 +1,21 @@
+'''
+COMP 141: Course Project
+Phase 1.1
+Scanner for Lexp
+
+Nicholas Henricksen and Samuel McCollough
+
+Code Description:
+This program will take an input file and output a text file containing the tokens identified.
+
+The input and output files are specified in the command line.
+Please see README.md for instructions on how to use the program.
+'''
+
 import sys
 import re
 
-identifier = "^[a-zA-Z][a-zA-Z0-9]*$"
+identifier = r"^[a-zA-Z][a-zA-Z0-9]*$"
 number = r"^[0-9]+$"
 symbol = r"^[+\-*/()]+$"
 #bool(re.fullmatch(pattern, text))
