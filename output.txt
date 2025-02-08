@@ -1,21 +1,22 @@
 34 + 89 - x * y23
-number: 4 
-number:  
-number: 9 
-number:  
-number:  
-number:  
+number: 34
+symbol: +
+number: 89
+symbol: -
+identifier: x
+symbol: *
 identifier: y23
-Error reading: 
 
 cxo6y / 67z23 * 56& 34 * x
-identifier: xo6y 
-identifier:  
+identifier: cxo6y
+symbol: /
 number: 67
-identifier: 23 
-identifier:  
+identifier: z23
+symbol: *
 number: 56
 Error reading: &
-2 + xnumber:  
-number:  
+
+2 + x
+number: 2
+symbol: +
 
