@@ -3,14 +3,14 @@ import re
 
 identifier = "^[a-zA-Z][a-zA-Z0-9]*$"
 number = "[0-9]+"
-symbol = "[+] | [-] | [*] | [/] | [(] | [)]"
+symbol = "^[\+\-\*/\(\)]$"
 #bool(re.fullmatch(pattern, text))
 
 input_file = sys.argv[1]
 output_file = sys.argv[2]
 
 def checkRegex(text) -> tuple:
-    return (bool(re.fullmatch(identifier, text)), bool(re.fullmatch(number, text)), bool(re.fullmatch(symbol, text)))
+    return bool(re.fullmatch(identifier, text)), bool(re.fullmatch(number, text)), bool(re.fullmatch(symbol, text))
 
 
 def parseLine(line):
@@ -35,13 +35,14 @@ def parseLine(line):
         resultID, resultNum, resultSymbol = checkRegex(text)
 
         validToken = resultID or resultNum or resultSymbol
-        if resultID:
-            token = (text, "identifier")
-        if resultNum:
-            token = (text, "number")
-        if resultSymbol:
-            token = (text, "symbol")
-        if validToken == False:
+        if validToken:
+            if resultID:
+                token = (text, "identifier")
+            if resultNum:
+                token = (text, "number")
+            if resultSymbol:
+                token = (text, "symbol")
+        else:
             #error
             token = (text[:-1], token[1])
             tokenList.append(token)
