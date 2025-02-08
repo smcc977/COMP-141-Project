@@ -5,8 +5,10 @@ output_file = sys.argv[2]
 
 def parseLine(line):
     print(line)
+    index = 0
     for char in line:
-        None
+        if index == 0:
+            None
 
 if __name__ == "__main__":
     inputList = []
