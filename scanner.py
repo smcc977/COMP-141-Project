@@ -10,11 +10,7 @@ input_file = sys.argv[1]
 output_file = sys.argv[2]
 
 def checkRegex(text) -> tuple:
-    out = (False, False, False)
-    out.first = bool(re.fullmatch(identifier, text))
-    out.second = bool(re.fullmatch(number, text))
-    out.third = bool(re.fullmatch(symbol, text))
-    return out
+    return (bool(re.fullmatch(identifier, text)), bool(re.fullmatch(number, text)), bool(re.fullmatch(symbol, text)))
 
 
 def parseLine(line):
