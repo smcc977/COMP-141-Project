@@ -13,29 +13,38 @@ def parseLine(line):
     print(line)
     #make each element a tuple with token and type
     tokenList = []
-    token = ""
+    token = ()
     indexStart = 0
-    indexEnd = 0
     count = 0
+    validToken = False
     for char in line:
         #if char == upper or lower, keep going until non alphanumeric
         #if char == number and its the start of token, continue until non number
         #if char == symbol, it's its own token and next should be something else
         #if char == whitespace, end last token and start new
         #if char == non recognizable symbol, error
-        text = line[0:count + 1]
+        text = line[startIndex:count + 1]
         resultID = bool(re.fullmatch(identifier, text))
         resultNum = bool(re.fullmatch(number, text))
         resultSymbol = bool(re.fullmatch(symbol, text))
 
+        validToken = resultID or resultNum or resultSymbol
         if resultID:
-            token = text
-        elif resultNum:
-            token = text
-        elif resultSymbol:
-            token = text
-        
-        #else error
+            token = (text, "identifier")
+        if resultNum:
+            token = (text, "number")
+        if resultSymbol:
+            token = (text, "symbol")
+        if validToken == False:
+            #error
+            token.first = text[:-1]
+            tokenList.append(token)
+            startIndex = count
+            resultID = bool(re.fullmatch(identifier, text))
+            resultNum = bool(re.fullmatch(number, text))
+            resultSymbol = bool(re.fullmatch(symbol, text))
+
+            
 
         count += 1
 
