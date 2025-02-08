@@ -11,9 +11,9 @@ output_file = sys.argv[2]
 
 def checkRegex(text) -> tuple:
     out = (False, False, False)
-    out.first = bool(re.fullmatch(identifier, text))
-    out.second = bool(re.fullmatch(number, text))
-    out.third = bool(re.fullmatch(symbol, text))
+    out[0] = bool(re.fullmatch(identifier, text))
+    out[0] = bool(re.fullmatch(number, text))
+    out[0] = bool(re.fullmatch(symbol, text))
     return out
 
 
@@ -22,7 +22,7 @@ def parseLine(line):
     #make each element a tuple with token and type
     tokenList = []
     token = ()
-    indexStart = 0
+    startIndex = 0
     count = 0
     validToken = False
     for char in line:
@@ -43,7 +43,7 @@ def parseLine(line):
             token = (text, "symbol")
         if validToken == False:
             #error
-            token.first = text[:-1]
+            token[0] = text[:-1]
             tokenList.append(token)
             startIndex = count
             text = line[startIndex:count + 1]
