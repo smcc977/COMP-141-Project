@@ -71,7 +71,8 @@ if __name__ == "__main__":
         with open(output_file, 'w') as o:
             for line in i:
                 o.write(line)
-                for token in parseLine(line):
-                    o.write(token)
+                if (tokens := parseLine(line)) is not None:
+                    for token in tokens:
+                        o.write(token)
             o.close()
         i.close()
