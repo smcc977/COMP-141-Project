@@ -9,6 +9,14 @@ symbol = "[+ - * / ( )]"
 input_file = sys.argv[1]
 output_file = sys.argv[2]
 
+def checkRegex(text) -> tuple:
+    out = (False, False, False)
+    out.first = bool(re.fullmatch(identifier, text))
+    out.second = bool(re.fullmatch(number, text))
+    out.third = bool(re.fullmatch(symbol, text))
+    return out
+
+
 def parseLine(line):
     print(line)
     #make each element a tuple with token and type
