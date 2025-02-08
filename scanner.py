@@ -1,7 +1,7 @@
 import sys
 import re
 
-identifier = "^[a-zA-Z][a-zA-Z0-9]*$"
+identifier = r"^[a-zA-Z][a-zA-Z0-9]*$"
 number = r"^[0-9]+$"
 symbol = r"^[+\-*/()]+$"
 #bool(re.fullmatch(pattern, text))
