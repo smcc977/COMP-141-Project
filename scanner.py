@@ -6,23 +6,8 @@ number = "[0-9]+"
 symbol = "[+ - * / ( )]"
 #bool(re.fullmatch(pattern, text))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 input_file = sys.argv[1]
 output_file = sys.argv[2]
-
-
 
 def parseLine(line):
     print(line)
