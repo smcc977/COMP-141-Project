@@ -46,12 +46,13 @@ def parseLine(line):
             token.first = text[:-1]
             tokenList.append(token)
             startIndex = count
+            text = line[startIndex:count + 1]
             resultID, resultNum, resultSymbol = checkRegex(text)
 
-            
-
+            if not resultID and not resultNum and not resultSymbol:
+                tokenList.append((line[count], "Error reading"))
+                startIndex += 1
         count += 1
-        
 
 if __name__ == "__main__":
     with open(input_file, 'r') as i:
