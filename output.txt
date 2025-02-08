@@ -1,1 +1,25 @@
 34 + 89 - x * y23
+number: 34
+number:  
+number: +
+number:  
+number: 89
+number:  
+Error reading: -
+cxo6y / 67z23 * 56& 34 * x
+identifier: cxo6y
+identifier:  
+identifier: /
+identifier:  
+number: 67
+identifier: z23
+identifier:  
+identifier: *
+identifier:  
+number: 56
+Error reading: &
+2 + xnumber: 2
+number:  
+number: +
+number:  
+
