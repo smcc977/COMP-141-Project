@@ -1,4 +1,10 @@
 import sys
+import re
+
+identifier = "^[a-zA-Z][a-zA-Z0-9]*$"
+number = "[0-9]+"
+symbol = "[+ - * / ( )]"
+#bool(re.fullmatch(pattern, text))
 
 
 
