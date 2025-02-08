@@ -43,8 +43,10 @@ def parseLine(line):
             resultID = bool(re.fullmatch(identifier, text))
             resultNum = bool(re.fullmatch(number, text))
             resultSymbol = bool(re.fullmatch(symbol, text))
-
             
+            if not resultID and not resultNum and not resultSymbol:
+                tokenList.append((line[count], "Error reading"))
+                startIndex += 1
 
         count += 1
 
