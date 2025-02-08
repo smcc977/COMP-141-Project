@@ -32,9 +32,7 @@ def parseLine(line):
         #if char == whitespace, end last token and start new
         #if char == non recognizable symbol, error
         text = line[startIndex:count + 1]
-        resultID = bool(re.fullmatch(identifier, text))
-        resultNum = bool(re.fullmatch(number, text))
-        resultSymbol = bool(re.fullmatch(symbol, text))
+        resultID, resultNum, resultSymbol = checkRegex(text)
 
         validToken = resultID or resultNum or resultSymbol
         if resultID:
@@ -48,22 +46,11 @@ def parseLine(line):
             token.first = text[:-1]
             tokenList.append(token)
             startIndex = count
-            resultID = bool(re.fullmatch(identifier, text))
-            resultNum = bool(re.fullmatch(number, text))
-            resultSymbol = bool(re.fullmatch(symbol, text))
+            resultID, resultNum, resultSymbol = checkRegex(text)
 
             
 
         count += 1
-
-        
-        
-        currIndex = char.index()
-        if char.isalpha:
-            continue
-        if char == " ":
-            tokenList.append(line[0:char + 1])
-            tokenList    
         
 
 if __name__ == "__main__":
