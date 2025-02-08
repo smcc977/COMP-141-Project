@@ -9,7 +9,7 @@ symbol = "[+ - * / ( )]"
 input_file = sys.argv[1]
 output_file = sys.argv[2]
 
-def checkRegex(text) -> tuple:
+def checkRegex(text):
     out = (False, False, False)
     out.first = bool(re.fullmatch(identifier, text))
     out.second = bool(re.fullmatch(number, text))
@@ -57,16 +57,6 @@ def parseLine(line):
                 startIndex += 1
 
         count += 1
-
-        
-        
-        currIndex = char.index()
-        if char.isalpha:
-            continue
-        if char == " ":
-            tokenList.append(line[0:char + 1])
-            tokenList    
-        
 
 if __name__ == "__main__":
     with open(input_file, 'r') as i:
