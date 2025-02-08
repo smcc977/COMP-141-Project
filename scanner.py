@@ -2,8 +2,8 @@ import sys
 import re
 
 identifier = "^[a-zA-Z][a-zA-Z0-9]*$"
-number = "[0-9]+"
-symbol = "^[\+\-\*/\(\)]$"
+number = r"^[0-9]+$"
+symbol = r"^[+\-*/()]+$"
 #bool(re.fullmatch(pattern, text))
 
 input_file = sys.argv[1]
@@ -27,6 +27,7 @@ def parseLine(line):
         #if char == symbol, it's its own token and next should be something else
         #if char == whitespace, end last token and start new
         #if char == non recognizable symbol, error
+        
         if char == " ":
             startIndex += 1
             count += 1
@@ -49,6 +50,7 @@ def parseLine(line):
             startIndex = count
             text = line[startIndex:count + 1]
             resultID, resultNum, resultSymbol = checkRegex(text)
+            startIndex = count + 1
 
             if not resultID and not resultNum and not resultSymbol:
                 tokenList.append((line[count], "Error reading"))
