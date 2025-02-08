@@ -50,8 +50,11 @@ def parseLine(line):
         
 
 if __name__ == "__main__":
-    inputList = []
-    for line in input_file:
-        inputList.append(line)
-    for list in inputList:
-        parseLine(line)
+    with open(input_file, 'r') as i:
+        with open(output_file, 'w') as o:
+            for line in i:
+                o.write(line)
+                for token in parseLine(line):
+                    o.write(token)
+            o.close()
+        i.close()
