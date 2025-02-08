@@ -18,7 +18,7 @@ def parseLine(line):
     #make each element a tuple with token and type
     tokenList = []
     token = ()
-    indexStart = 0
+    startIndex = 0
     count = 0
     validToken = False
     for char in line:
@@ -39,7 +39,7 @@ def parseLine(line):
             token = (text, "symbol")
         if validToken == False:
             #error
-            token.first = text[:-1]
+            token = (text[:-1], token[1])
             tokenList.append(token)
             startIndex = count
             text = line[startIndex:count + 1]
@@ -56,8 +56,9 @@ if __name__ == "__main__":
         with open(output_file, 'w') as o:
             for line in i:
                 o.write(line)
+
                 if (tokens := parseLine(line)) is not None:
                     for token in tokens:
-                        o.write(token)
+                        o.write(token[1] + ": "+ token[0] + "\n")
             o.close()
         i.close()
