@@ -10,11 +10,7 @@ input_file = sys.argv[1]
 output_file = sys.argv[2]
 
 def checkRegex(text) -> tuple:
-    out = (False, False, False)
-    out[0] = bool(re.fullmatch(identifier, text))
-    out[0] = bool(re.fullmatch(number, text))
-    out[0] = bool(re.fullmatch(symbol, text))
-    return out
+    return (bool(re.fullmatch(identifier, text)), bool(re.fullmatch(number, text)), bool(re.fullmatch(symbol, text)))
 
 
 def parseLine(line):
@@ -43,7 +39,7 @@ def parseLine(line):
             token = (text, "symbol")
         if validToken == False:
             #error
-            token[0] = text[:-1]
+            token = (text[:-1], token[1])
             tokenList.append(token)
             startIndex = count
             text = line[startIndex:count + 1]
@@ -60,8 +56,9 @@ if __name__ == "__main__":
         with open(output_file, 'w') as o:
             for line in i:
                 o.write(line)
+
                 if (tokens := parseLine(line)) is not None:
                     for token in tokens:
-                        o.write(token)
+                        o.write(token[1] + ": "+ token[0] + "\n")
             o.close()
         i.close()
