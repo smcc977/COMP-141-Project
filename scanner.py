@@ -29,18 +29,12 @@ def checkRegex(text) -> tuple:
 
 def parseLine(line):
     print(line)
-    #make each element a tuple with token and type
     tokenList = []
     token = ()
     startIndex = 0
     count = 0
     validToken = False
     for char in line:
-        #if char == upper or lower, keep going until non alphanumeric
-        #if char == number and its the start of token, continue until non number
-        #if char == symbol, it's its own token and next should be something else
-        #if char == whitespace, end last token and start new
-        #if char == non recognizable symbol, error
         text = line[startIndex:count + 1]
         resultID, resultNum, resultSymbol = checkRegex(text)
 
@@ -53,7 +47,6 @@ def parseLine(line):
             if resultSymbol:
                 token = (text, "symbol")
         else:
-            #error
             token = (text[:-1], token[1])
             tokenList.append(token)
             startIndex = count
