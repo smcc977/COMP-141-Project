@@ -52,19 +52,9 @@ def parseLine(line):
             resultNum = bool(re.fullmatch(number, text))
             resultSymbol = bool(re.fullmatch(symbol, text))
 
-            
+            if not resultID            
 
-        count += 1
-
-        
-        
-        currIndex = char.index()
-        if char.isalpha:
-            continue
-        if char == " ":
-            tokenList.append(line[0:char + 1])
-            tokenList    
-        
+        count += 1 
 
 if __name__ == "__main__":
     with open(input_file, 'r') as i:
