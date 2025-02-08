@@ -27,11 +27,6 @@ def parseLine(line):
         #if char == symbol, it's its own token and next should be something else
         #if char == whitespace, end last token and start new
         #if char == non recognizable symbol, error
-        
-        if char == " ":
-            startIndex += 1
-            count += 1
-            continue
         text = line[startIndex:count + 1]
         resultID, resultNum, resultSymbol = checkRegex(text)
 
@@ -50,9 +45,11 @@ def parseLine(line):
             startIndex = count
             text = line[startIndex:count + 1]
             resultID, resultNum, resultSymbol = checkRegex(text)
-            startIndex = count + 1
-
             if not resultID and not resultNum and not resultSymbol:
+                if char == " " or char == "\t" or char == "\n" or char == "\r":
+                    startIndex += 1
+                    count += 1
+                    continue
                 tokenList.append((line[count], "Error reading"))
                 return tokenList
         count += 1
@@ -62,10 +59,10 @@ if __name__ == "__main__":
     with open(input_file, 'r') as i:
         with open(output_file, 'w') as o:
             for line in i:
-                o.write(line)
+                o.write(line.strip() + "\n")
                 if (tokens := parseLine(line)) is not None:
                     for token in tokens:
                         o.write(token[1] + ": "+ token[0] + "\n")
-            o.write("\n")
+                o.write("\n")
             o.close()
         i.close()
