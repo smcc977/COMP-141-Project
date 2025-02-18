@@ -21,6 +21,7 @@ symbol = r"^[+\-*/():;]+$"
 #symbol = r"^(?:\+\-|\*|\/|\(|\)|;|:)$"
 keyword = r"^(if|then|else|endif|while|do|endwhile|skip)$"
 #bool(re.fullmatch(pattern, text))
+whitespace = r"\s+"
 
 input_file = sys.argv[1]
 output_file = sys.argv[2]
@@ -28,6 +29,8 @@ output_file = sys.argv[2]
 def checkRegex(text) -> tuple:
     return bool(re.fullmatch(identifier, text)), bool(re.fullmatch(number, text)), bool(re.fullmatch(symbol, text)), bool(re.fullmatch(keyword, text))
 
+def checkWhitespace(text) -> bool:
+    return bool(re.fullmatch(whitespace, text))
 
 def parseLine(line):
     print(line)
@@ -49,9 +52,13 @@ def parseLine(line):
             elif resultNum:
                 token = (text, "number")
             elif resultSymbol:
-                if char == ":" and line[count+1] == "=":
-                    token = (line[startIndex:count + 1], "symbol")
-                    count += 2
+                if char == ":":
+                    if line[count+1] == "=":
+                        token = (line[startIndex:count + 2], "symbol")
+                        count += 2
+                        continue
+                    else:
+                        token = None
                 else:
                     token = (text, "symbol")
 
@@ -59,11 +66,13 @@ def parseLine(line):
             if token is not None:               #added none check for index error, review later
                 token = (text[:-1], token[1])
                 tokenList.append(token)
+                token = None
+                count -= 1
             startIndex = count
             text = line[startIndex:count + 1]
             resultID, resultNum, resultSymbol, resultKeyword = checkRegex(text)
             if not resultID and not resultNum and not resultSymbol and not resultKeyword:
-                if char == " " or char == "\t" or char == "\n" or char == "\r":
+                if checkWhitespace(text):
                     startIndex += 1
                     count += 1
                     continue
