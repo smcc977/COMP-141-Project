@@ -38,8 +38,9 @@ def parseLine(line):
     token = None    #changed from tuple to None
     startIndex = 0
     count = 0
+    text = ""
     validToken = False
-    for char in line:
+    while count < len(line):
         text = line[startIndex:count + 1]
         resultID, resultNum, resultSymbol, resultKeyword = checkRegex(text)
 
@@ -52,10 +53,10 @@ def parseLine(line):
             elif resultNum:
                 token = (text, "number")
             elif resultSymbol:
-                if char == ":":
+                if line[count] == ":":
                     if line[count+1] == "=":
-                        token = (line[startIndex:count + 2], "symbol")
-                        count += 3
+                        token = (line[startIndex:count + 1], "symbol")
+                        count += 1
                         continue
                     else:
                         token = None
@@ -82,7 +83,9 @@ def parseLine(line):
                 tokenList.append((line[count], "Error reading"))
                 return tokenList
         count += 1
-
+    if token is not None:  # added none check for index error, review later
+        token = (text, token[1])
+        tokenList.append(token)
     return tokenList
     
 
