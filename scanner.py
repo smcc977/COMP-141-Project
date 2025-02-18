@@ -17,8 +17,8 @@ import re
 
 identifier = r"^[a-zA-Z][a-zA-Z0-9]*$"
 number = r"^[0-9]+$"
-#symbol = r"^([+\-*/();]|:=)+$"
-symbol = r"^(?:\+\-|\*|\/|\(|\)|;|:=)$"
+symbol = r"^[+\-*/():;]+$"
+#symbol = r"^(?:\+\-|\*|\/|\(|\)|;|:)$"
 keyword = r"^(if|then|else|endif|while|do|endwhile|skip)$"
 #bool(re.fullmatch(pattern, text))
 
@@ -49,10 +49,11 @@ def parseLine(line):
             elif resultNum:
                 token = (text, "number")
             elif resultSymbol:
-                token = (text, "symbol")
-            if not resultSymbol:
-                if char == ":" and line[count + 1] == "=":
+                if char == ":" and line[count+1] == "=":
                     token = (line[startIndex:count + 1], "symbol")
+                    count += 2
+                else:
+                    token = (text, "symbol")
 
         else:
             if token is not None:               #added none check for index error, review later
