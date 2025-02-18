@@ -5,9 +5,6 @@ number: 36
 Error reading:  
 
 if y then
-keyword: if
-identifier: y
-keyword: then
 
 x32 :=0; skip
 identifier: x32
@@ -16,7 +13,6 @@ symbol: ;
 Error reading:  
 
 else
-keyword: else
 
 whiley := 12^2;
 identifier: whiley
@@ -30,5 +26,4 @@ identifier: :
 Error reading: =
 
 endif
-keyword: endif
 
