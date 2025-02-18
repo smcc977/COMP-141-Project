@@ -1,29 +1,37 @@
-x32 := 36 - y;
-identifier: x32
-symbol: :=
-number: 36
-symbol: -
+Line: x32 := 36 - y;
+x32 : IDENTIFIER
+:= : SYMBOL
+36 : NUMBER
+- : SYMBOL
+y : IDENTIFIER
+; : SYMBOL
 
-if y then
-keyword: if
-identifier: y
+Line: if y then
+if : KEYWORD
+y : IDENTIFIER
+then : KEYWORD
 
-x32 :=0; skip
-identifier: x32
-symbol: :=
+Line:     x32 :=0; skip
+x32 : IDENTIFIER
+:= : SYMBOL
+0 : NUMBER
+; : SYMBOL
+skip : KEYWORD
 
-else
-keyword: else
+Line: else
+else : KEYWORD
 
-whiley := 12^2;
-identifier: whiley
-symbol: :=
-number: 12
-Error reading: ^
+Line:     whiley := 12^2;
+whiley : IDENTIFIER
+:= : SYMBOL
+12 : NUMBER
+^ : ERROR READING
 
-z:= x32
-identifier: z
-symbol: :=
+Line:     z:= x32
+z : IDENTIFIER
+:= : SYMBOL
+x32 : IDENTIFIER
 
-endif
+Line: endif
+endif : KEYWORD
 
