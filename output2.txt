@@ -1,29 +1,29 @@
 x32 := 36 - y;
 identifier: x32
-symbol: := 
+symbol: :=
 number: 36
-Error reading:  
+symbol: -
 
 if y then
+keyword: if
+identifier: y
 
 x32 :=0; skip
 identifier: x32
-symbol: :=0
-symbol: ;
-Error reading:  
+symbol: :=
 
 else
+keyword: else
 
 whiley := 12^2;
 identifier: whiley
-symbol: := 
+symbol: :=
 number: 12
 Error reading: ^
 
 z:= x32
 identifier: z
-identifier: :
-Error reading: =
+symbol: :=
 
 endif
 
