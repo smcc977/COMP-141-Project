@@ -36,6 +36,7 @@ def parseLine(line):
     startIndex = 0
     count = 0
     validToken = False
+    specialCond = False
     for char in line:
         text = line[startIndex:count + 1]
         resultID, resultNum, resultSymbol, resultKeyword = checkRegex(text)
@@ -50,15 +51,21 @@ def parseLine(line):
                 token = (text, "number")
             elif resultSymbol:
                 token = (text, "symbol")
-            if not resultSymbol:
-                if char == ":" and line[count + 1] == "=":
-                    token = (line[startIndex:count + 1], "symbol")
+        elif not resultSymbol:
+            if char == ":" and line[count + 1] == "=":
+                specialCond = True
+                token = (line[startIndex:count + 1], "symbol")
 
         else:
-            if token is not None:               #added none check for index error, review later
+            if specialCond == True:               #added none check for index error, review later
+                token = (text, token[1])
+                tokenList.append(token)
+                startIndex = count + 1
+                count = count + 1
+            else:
                 token = (text[:-1], token[1])
                 tokenList.append(token)
-            startIndex = count
+                startIndex = count
             text = line[startIndex:count + 1]
             resultID, resultNum, resultSymbol, resultKeyword = checkRegex(text)
             if not resultID and not resultNum and not resultSymbol and not resultKeyword:
