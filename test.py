@@ -49,10 +49,8 @@ class ASTNode:
         self.children = children if children is not None else []
 
 def print_ast(node, indent=""):
-    """Preorder traversal printing of the AST with indentation."""
     if node is None:
         return
-    # Print current node: value and token type.
     print(f"{indent}{node.token[0]} : {node.token[1]}")
     for child in node.children:
         print_ast(child, indent + "  ")
@@ -98,12 +96,11 @@ def parse_expression(ts):
     return node
 
 def parse_term(ts):
-    # term ::= factor { - factor }
     node = parse_factor(ts)
     while True:
         token = ts.peek()
         if token is not None and token[0] == '-':
-            op = ts.next()  # Consume '-'
+            op = ts.next()
             right = parse_factor(ts)
             node = ASTNode(op, children=[node, right])
         else:
@@ -111,12 +108,11 @@ def parse_term(ts):
     return node
 
 def parse_factor(ts):
-    # factor ::= piece { / piece }
     node = parse_piece(ts)
     while True:
         token = ts.peek()
         if token is not None and token[0] == '/':
-            op = ts.next()  # Consume '/'
+            op = ts.next()
             right = parse_piece(ts)
             node = ASTNode(op, children=[node, right])
         else:
@@ -124,12 +120,11 @@ def parse_factor(ts):
     return node
 
 def parse_piece(ts):
-    # piece ::= element { * element }
     node = parse_element(ts)
     while True:
         token = ts.peek()
         if token is not None and token[0] == '*':
-            op = ts.next()  # Consume '*'
+            op = ts.next()
             right = parse_element(ts)
             node = ASTNode(op, children=[node, right])
         else:
@@ -137,39 +132,28 @@ def parse_piece(ts):
     return node
 
 def parse_element(ts):
-    # element ::= ( expression ) | NUMBER | IDENTIFIER
     token = ts.peek()
     if token is None:
         raise Exception("Unexpected end of input while parsing element.")
     
     if token[0] == '(':
-        ts.next()  # Consume '('
+        ts.next()
         node = parse_expression(ts)
-        # Expect closing parenthesis
         if ts.peek() is None or ts.peek()[0] != ')':
             raise Exception("Missing closing parenthesis.")
-        ts.next()  # Consume ')'
+        ts.next()
         return node
     elif token[1] == "NUMBER" or token[1] == "IDENTIFIER":
-        return ASTNode(ts.next())  # Return leaf node.
+        return ASTNode(ts.next())
     else:
         raise Exception(f"Unexpected token {token} in element.")
 
 def parse_tokens(tokens):
-    """
-    Parse the entire token list and return the AST.
-    The token list is wrapped into a TokenStream.
-    """
     ts = TokenStream(tokens)
     ast = parse_expression(ts)
-    # Check for any leftover tokens.
     if ts.peek() is not None:
         raise Exception(f"Extra token '{ts.peek()}' found after parsing complete expression.")
     return ast
-
-# ------------------------
-# Main test driver
-# ------------------------
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
@@ -179,9 +163,8 @@ if __name__ == "__main__":
     input_file = sys.argv[1]
     output_file = sys.argv[2]
 
-    # We will collect tokens from all lines.
     all_tokens = []
-    output_lines = []  # To store output for file writing
+    output_lines = []
 
     try:
         with open(input_file, 'r') as i:
@@ -189,24 +172,18 @@ if __name__ == "__main__":
                 line = line.rstrip("\n")
                 output_lines.append("Line: " + line)
                 tokens = parseLine(line)
-                # Check for scanning errors.
                 for token in tokens:
                     if token[1] == "ERROR READING":
                         output_lines.append(f"Error: could not read token '{token[0]}' in line: {line}")
                         raise Exception("Scanning error encountered.")
                     output_lines.append(f"{token[0]} : {token[1]}")
-                output_lines.append("")  # Blank line between input lines.
+                output_lines.append("")
                 all_tokens.extend(tokens)
         
-        # Print tokens section header.
         output_lines.insert(0, "Tokens:")
-
-        # Parse tokens to generate the AST.
         ast = parse_tokens(all_tokens)
 
-        # Print the AST.
         output_lines.append("AST:")
-        # We will capture the AST printing in a temporary list of strings.
         def collect_ast(node, indent=""):
             lines = []
             lines.append(f"{indent}{node.token[0]} : {node.token[1]}")
@@ -220,7 +197,6 @@ if __name__ == "__main__":
     except Exception as e:
         output_lines.append("Error: " + str(e))
 
-    # Write the output to file.
     with open(output_file, 'w') as o:
         for line in output_lines:
             o.write(line + "\n")
