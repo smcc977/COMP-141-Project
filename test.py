@@ -28,13 +28,6 @@ class ASTNode:
         self.token = token
         self.children = children if children is not None else []
 
-def print_ast(node, indent=""):
-    if node is None:
-        return
-    print(f"{indent}{node.token[0]} : {node.token[1]}")
-    for child in node.children:
-        print_ast(child, indent + "  ")
-
 class TokenStream:
     def __init__(self, tokens):
         self.tokens = tokens
@@ -134,6 +127,12 @@ def parse_tokens(tokens):
         raise Exception(f"Extra token '{ts.peek()}' found after parsing complete expression.")
     return ast
 
+def collect_ast(node, indent=""):
+            lines = []
+            lines.append(f"{indent}{node.token[0]} : {node.token[1]}")
+            for child in node.children:
+                lines.extend(collect_ast(child, indent + "  "))
+            return lines
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         print("Usage: python parser.py <input_file> <output_file>")
@@ -163,13 +162,6 @@ if __name__ == "__main__":
         ast = parse_tokens(all_tokens)
 
         output_lines.append("AST:")
-        def collect_ast(node, indent=""):
-            lines = []
-            lines.append(f"{indent}{node.token[0]} : {node.token[1]}")
-            for child in node.children:
-                lines.extend(collect_ast(child, indent + "  "))
-            return lines
-
         ast_lines = collect_ast(ast)
         output_lines.extend(ast_lines)
 
