@@ -44,7 +44,6 @@ def parseLine(line):
 
 class ASTNode:
     def __init__(self, token, children=None):
-        # token is a tuple (value, type)
         self.token = token
         self.children = children if children is not None else []
 
@@ -83,12 +82,11 @@ class TokenStream:
 
 
 def parse_expression(ts):
-    # expression ::= term { + term }
     node = parse_term(ts)
     while True:
         token = ts.peek()
         if token is not None and token[0] == '+':
-            op = ts.next()  # Consume '+'
+            op = ts.next()
             right = parse_term(ts)
             node = ASTNode(op, children=[node, right])
         else:
