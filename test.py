@@ -10,6 +10,7 @@ to the output file.
 
 import sys
 import re
+from scanner_1_1 import parseLine
 
 
 token_re = re.compile(r"""
@@ -20,26 +21,6 @@ token_re = re.compile(r"""
     """, re.VERBOSE)
 
 whitespace_re = re.compile(r"\s+")
-
-def parseLine(line):
-    tokenList = []
-    pos = 0
-    while pos < len(line):
-        m_ws = whitespace_re.match(line, pos)
-        if m_ws:
-            pos = m_ws.end()
-            if pos >= len(line):
-                break
-        m = token_re.match(line, pos)
-        if m:
-            tokenType = m.lastgroup
-            tokenValue = m.group(tokenType)
-            tokenList.append((tokenValue, tokenType.upper()))
-            pos = m.end()
-        else:
-            tokenList.append((line[pos], "ERROR READING"))
-            break
-    return tokenList
 
 
 class ASTNode:
