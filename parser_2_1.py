@@ -1,73 +1,173 @@
-r'''COMP 141: Course Project
-Phase 2.1
-Parser for Lexp
+"""
+COMP 141: Course Project
+Phase 2.1: Parser for Lexp
 
-Nicholas Henricksen and Samuel McCollough
-
-Code Description:
-This program will take an input file and output a text file containing the tokens identified.
-
-The input and output files are specified in the command line.
-Please see README.md for instructions on how to use the program.
-
-Grammar
-expression ::= term { + term }
-term ::= factor { - factor }
-factor ::= piece { / piece }
-piece ::= element { * element }
-element ::= ( expression ) | NUMBER | IDENTIFIER
-'''
+This program integrates a scanner (Phase 1.1) and a parser for Lexp.
+It reads an input file (with a single expression), tokenizes it, and then parses
+the tokens to build an abstract syntax tree (AST). The tokens and AST are printed
+to the output file.
+"""
 
 import sys
-import nltk
-from nltk import CFG, ChartParser, EarleyChartParser
-from scanner_1_1 import parseLine
+import re
+from scanner_1_2 import parseLine
 
-grammar = CFG.fromstring("""
-expression   -> term expression_tail
-expression_tail -> '+' term expression_tail | ""
-term         -> factor term_tail
-term_tail    -> '-' factor term_tail | ""
-factor       -> piece factor_tail
-factor_tail  -> '/' piece factor_tail | ""
-piece        -> element piece_tail
-piece_tail   -> '*' element piece_tail | ""
-element      -> '(' expression ')' | 'NUMBER' | 'IDENTIFIER'
-""")
 
-def convert_tokens(tokens):
-    new_tokens = []
-    for i in range(len(tokens)):
-        if tokens[i][1].lower() == 'identifier':
-            new_tokens.append("IDENTIFIER")
-        elif tokens[i][1].lower() == 'number':
-            new_tokens.append("NUMBER")
-        elif tokens[i][1].lower() == 'symbol':
-            new_tokens.append(tokens[i][0])
-        elif tokens[i][1].lower() == 'keyword':
-            print("that is bad")
-            return None
-    return new_tokens
+token_re = re.compile(r"""
+    (?P<KEYWORD>\b(?:if|then|else|endif|while|do|endwhile|skip)\b) |
+    (?P<IDENTIFIER>[a-zA-Z][a-zA-Z0-9]*) |
+    (?P<NUMBER>\d+) |
+    (?P<SYMBOL>:=|[+\-*/();])
+    """, re.VERBOSE)
 
-def match_tokens_to_grammar(tokens):
-    parser = EarleyChartParser(grammar)
-    parseTree = list(parser.parse(tokens))
-    return parseTree
+whitespace_re = re.compile(r"\s+")
 
-if __name__ == '__main__':
+
+class ASTNode:
+    def __init__(self, token, children=None):
+        self.token = token
+        self.children = children if children is not None else []
+
+class TokenStream:
+    def __init__(self, tokens):
+        self.tokens = tokens
+        self.pos = 0
+
+    def peek(self):
+        if self.pos < len(self.tokens):
+            return self.tokens[self.pos]
+        return None
+
+    def next(self):
+        token = self.peek()
+        self.pos += 1
+        return token
+
+    def expect(self, expected_value=None, expected_type=None):
+        token = self.peek()
+        if token is None:
+            raise Exception("Unexpected end of token stream.")
+        val, typ = token
+        if expected_value is not None and val != expected_value:
+            raise Exception(f"Expected token '{expected_value}', but got '{val}'.")
+        if expected_type is not None and typ != expected_type:
+            raise Exception(f"Expected token type '{expected_type}', but got '{typ}'.")
+        return self.next()
+
+
+def parse_expression(ts):
+    node = parse_term(ts)
+    while True:
+        token = ts.peek()
+        if token is not None and token[0] == '+':
+            op = ts.next()
+            right = parse_term(ts)
+            node = ASTNode(op, children=[node, right])
+        else:
+            break
+    return node
+
+def parse_term(ts):
+    node = parse_factor(ts)
+    while True:
+        token = ts.peek()
+        if token is not None and token[0] == '-':
+            op = ts.next()
+            right = parse_factor(ts)
+            node = ASTNode(op, children=[node, right])
+        else:
+            break
+    return node
+
+def parse_factor(ts):
+    node = parse_piece(ts)
+    while True:
+        token = ts.peek()
+        if token is not None and token[0] == '/':
+            op = ts.next()
+            right = parse_piece(ts)
+            node = ASTNode(op, children=[node, right])
+        else:
+            break
+    return node
+
+def parse_piece(ts):
+    node = parse_element(ts)
+    while True:
+        token = ts.peek()
+        if token is not None and token[0] == '*':
+            op = ts.next()
+            right = parse_element(ts)
+            node = ASTNode(op, children=[node, right])
+        else:
+            break
+    return node
+
+def parse_element(ts):
+    token = ts.peek()
+    if token is None:
+        raise Exception("Unexpected end of input while parsing element.")
+    
+    if token[0] == '(':
+        ts.next()
+        node = parse_expression(ts)
+        if ts.peek() is None or ts.peek()[0] != ')':
+            raise Exception("Missing closing parenthesis.")
+        ts.next()
+        return node
+    elif token[1] == "NUMBER" or token[1] == "IDENTIFIER":
+        return ASTNode(ts.next())
+    else:
+        raise Exception(f"Unexpected token {token} in element.")
+
+def parse_tokens(tokens):
+    ts = TokenStream(tokens)
+    ast = parse_expression(ts)
+    if ts.peek() is not None:
+        raise Exception(f"Extra token '{ts.peek()}' found after parsing complete expression.")
+    return ast
+
+def collect_ast(node, indent=""):
+            lines = []
+            lines.append(f"{indent}{node.token[0]} : {node.token[1]}")
+            for child in node.children:
+                lines.extend(collect_ast(child, indent + "  "))
+            return lines
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print("Usage: python parser.py <input_file> <output_file>")
+        sys.exit(1)
+
     input_file = sys.argv[1]
     output_file = sys.argv[2]
-    with open(input_file, 'r') as i, open(output_file, 'w') as o:
-        for line in i:
-            line = line.rstrip("\n")
-            o.write("Line: " + line + "\n")
-            tokens = parseLine(line)
-            cfg_tokens = convert_tokens(tokens)
-            print(cfg_tokens)
-            parse_tree = match_tokens_to_grammar(cfg_tokens)
-            if parse_tree:
-                print("The token list is valid according to the grammar!")
-                for tree in parse_tree:
-                    print(tree)
-            print(parse_tree)
 
+    all_tokens = []
+    output_lines = []
+
+    try:
+        with open(input_file, 'r') as i:
+            for line in i:
+                line = line.rstrip("\n")
+                output_lines.append("Line: " + line)
+                tokens = parseLine(line)
+                for token in tokens:
+                    if token[1] == "ERROR READING":
+                        output_lines.append(f"Error: could not read token '{token[0]}' in line: {line}")
+                        raise Exception("Scanning error encountered.")
+                    output_lines.append(f"{token[0]} : {token[1]}")
+                output_lines.append("")
+                all_tokens.extend(tokens)
+        
+        output_lines.insert(0, "Tokens:")
+        ast = parse_tokens(all_tokens)
+
+        output_lines.append("AST:")
+        ast_lines = collect_ast(ast)
+        output_lines.extend(ast_lines)
+
+    except Exception as e:
+        output_lines.append("Error: " + str(e))
+
+    with open(output_file, 'w') as o:
+        for line in output_lines:
+            o.write(line + "\n")
