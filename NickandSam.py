@@ -10,14 +10,14 @@ to the output file.
 
 import sys
 import re
-from scanner_1_1 import parseLine
+from scanner_1_2 import parseLine
 
 
 token_re = re.compile(r"""
     (?P<KEYWORD>\b(?:if|then|else|endif|while|do|endwhile|skip)\b) |
     (?P<IDENTIFIER>[a-zA-Z][a-zA-Z0-9]*) |
     (?P<NUMBER>\d+) |
-    (?P<SYMBOL>[+\-*/();])
+    (?P<SYMBOL>:=|[+\-*/();])
     """, re.VERBOSE)
 
 whitespace_re = re.compile(r"\s+")
