@@ -10,7 +10,7 @@ to the output file.
 
 import sys
 import re
-from scanner_1_2 import parseLine
+from scanner_1_1 import parseLine
 
 
 token_re = re.compile(r"""
