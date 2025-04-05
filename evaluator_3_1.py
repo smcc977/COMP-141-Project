@@ -208,6 +208,24 @@ def collect_ast(node, indent=""):
             for child in node.children:
                 lines.extend(collect_ast(child, indent + "  "))
             return lines
+
+def isValidExpression(stack):
+    return len(stack) >= 3 and stack[len(stack) - 1].token[1] == "NUMBER" and stack[len(stack) - 2].token[1] == "NUMBER" and stack[len(stack) - 3].token[1] == "SYMBOL"
+
+def push(node, stack = [], validCount):
+    stack.append(node)
+    top = len(stack) - 1
+    if isValidExpression(stack):
+        return stack
+    for child in node.children:
+        push(child, stack)
+    return stack
+
+def evaluate(ast):
+    stack = push(ast)
+    top = len(stack) - 1
+    
+
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         print("Usage: python parser.py <input_file> <output_file>")
@@ -248,3 +266,4 @@ if __name__ == "__main__":
     with open(output_file, 'w') as o:
         for line in output_lines:
             o.write(line + "\n")
+    evaluate(ast)
