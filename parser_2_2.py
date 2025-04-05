@@ -208,6 +208,7 @@ def collect_ast(node, indent=""):
             for child in node.children:
                 lines.extend(collect_ast(child, indent + "  "))
             return lines
+
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         print("Usage: python parser.py <input_file> <output_file>")
