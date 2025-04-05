@@ -143,20 +143,39 @@ def collect_ast(node, indent=""):
 def isValidExpression(stack):
     return len(stack) >= 3 and stack[len(stack) - 1].token[1] == "NUMBER" and stack[len(stack) - 2].token[1] == "NUMBER" and stack[len(stack) - 3].token[1] == "SYMBOL"
 
-def push(node, stack = []):
-    stack.append(node)
-    top = len(stack) - 1
-    if isValidExpression(stack):
+class LinearAST:
+    def __init__(self, ast):
+        self.nodes = self.push(ast)
+        self.index = self.getIndex()
+
+    def push(self, node, stack = []):
+        stack.append(node)
+        top = len(stack) - 1
+        for child in node.children:
+            self.push(child, stack)
         return stack
-    for child in node.children:
-        push(child, stack)
-    return stack
+
+    def pop(self):
+        value = self.nodes[self.index]
+        self.index += 1
+        return value
+
+    def getIndex(self):
+        for i in range(len(self.nodes)):
+            if isValidExpression(self.nodes[:i]):
+                return i
+        return len(self.nodes)
+
+    def getStack(self):
+        return self.nodes[:self.index]
+
 
 def evaluate(ast):
-    stack = push(ast)
-    return eval(ast, stack)
+    linear = LinearAST(ast)
+    stack = LinearAST(ast).getStack()
+    return eval(linear, stack)
 
-def eval(ast, stack):
+def eval(linear, stack):
     if len(stack) == 0:
         raise Exception("Unexpected end of input while evaluating AST.")
 
@@ -168,7 +187,7 @@ def eval(ast, stack):
 
     top = len(stack) - 1
     if isValidExpression(stack):
-        symbol = stack[top - 2].token[1]
+        symbol = stack[top - 2].token[0]
         if symbol == "+":
             stack.append(ASTNode((str(int(stack[top - 1].token[0]) + int(stack[top].token[0])), "NUMBER"), []))
         elif symbol == "-":
@@ -179,7 +198,7 @@ def eval(ast, stack):
             stack.append(ASTNode((str(int(stack[top - 1].token[0]) * int(stack[top].token[0])), "NUMBER"), []))
         elif symbol == "/":
             try:
-                stack.append(ASTNode((str(int(stack[top - 1].token[0]) / int(stack[top].token[0])), "NUMBER"), []))
+                stack.append(ASTNode((str(int(stack[top - 1].token[0]) // int(stack[top].token[0])), "NUMBER"), []))
             except ZeroDivisionError:
                 raise Exception("Division by zero")
         else:
@@ -188,10 +207,15 @@ def eval(ast, stack):
         stack.pop(top - 2)
         stack.pop(top - 2)
     else:
-        stack = push(ast, stack)
+        stack.append(linear.pop())
 
-    return eval(ast, stack)
+    return eval(linear, stack)
     
+def stackToString(stack):
+    string = ""
+    for node in stack:
+        string += str(node.token)
+    return string
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
@@ -227,7 +251,8 @@ if __name__ == "__main__":
         ast_lines = collect_ast(ast)
         output_lines.extend(ast_lines)
 
-        print(evaluate(ast))
+        output = evaluate(ast)
+        output_lines.append(f"\nOutput: {output.token[0]}")
 
     except Exception as e:
         output_lines.append("Error: " + str(e))
