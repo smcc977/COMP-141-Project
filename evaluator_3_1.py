@@ -7,49 +7,26 @@ It reads an input file (with a single expression), tokenizes it, and then parses
 the tokens to build an abstract syntax tree (AST). The tokens and AST are printed
 to the output file.
 """
+
 import sys
 import re
+from scanner_1_2 import parseLine
 
 token_re = re.compile(r"""
     (?P<KEYWORD>\b(?:if|then|else|endif|while|do|endwhile|skip)\b) |
     (?P<IDENTIFIER>[a-zA-Z][a-zA-Z0-9]*) |
     (?P<NUMBER>\d+) |
-    (?P<SYMBOL>(:=|[+\-*/();]))
+    (?P<SYMBOL>:=|[+\-*/();])
     """, re.VERBOSE)
 
 whitespace_re = re.compile(r"\s+")
 
-def parseLine(line):
-    tokenList = []
-    pos = 0
-    while pos < len(line):
-        m_ws = whitespace_re.match(line, pos)
-        if m_ws:
-            pos = m_ws.end()
-            if pos >= len(line):
-                break
-        m = token_re.match(line, pos)
-        if m:
-            tokenType = m.lastgroup
-            tokenValue = m.group(tokenType)
-            tokenList.append((tokenValue, tokenType.upper()))
-            pos = m.end()
-        else:
-            tokenList.append((line[pos], "ERROR READING"))
-            break
-    return tokenList
 
 class ASTNode:
     def __init__(self, token, children=None):
         self.token = token
         self.children = children if children is not None else []
 
-def print_ast(node, indent=""):
-    if node is None:
-        return
-    print(f"{indent}{node.token[0]} : {node.token[1]}")
-    for child in node.children:
-        print_ast(child, indent + "  ")
 
 class TokenStream:
     def __init__(self, tokens):
@@ -77,7 +54,8 @@ class TokenStream:
             raise Exception(f"Expected token type '{expected_type}', but got '{typ}'.")
         return self.next()
 
-def parse_expression(ts: TokenStream):
+
+def parse_expression(ts):
     node = parse_term(ts)
     while True:
         token = ts.peek()
@@ -89,7 +67,8 @@ def parse_expression(ts: TokenStream):
             break
     return node
 
-def parse_term(ts: TokenStream):
+
+def parse_term(ts):
     node = parse_factor(ts)
     while True:
         token = ts.peek()
@@ -101,7 +80,8 @@ def parse_term(ts: TokenStream):
             break
     return node
 
-def parse_factor(ts: TokenStream):
+
+def parse_factor(ts):
     node = parse_piece(ts)
     while True:
         token = ts.peek()
@@ -113,7 +93,8 @@ def parse_factor(ts: TokenStream):
             break
     return node
 
-def parse_piece(ts: TokenStream):
+
+def parse_piece(ts):
     node = parse_element(ts)
     while True:
         token = ts.peek()
@@ -125,10 +106,12 @@ def parse_piece(ts: TokenStream):
             break
     return node
 
-def parse_element(ts: TokenStream):
+
+def parse_element(ts):
     token = ts.peek()
     if token is None:
         raise Exception("Unexpected end of input while parsing element.")
+
     if token[0] == '(':
         ts.next()
         node = parse_expression(ts)
@@ -141,78 +124,26 @@ def parse_element(ts: TokenStream):
     else:
         raise Exception(f"Unexpected token {token} in element.")
 
-def parse_statement(ts: TokenStream):
-    node = parse_basestatement(ts)
-    while True:
-        token = ts.peek()
-        if token is not None and token[0] == ';':
-            semicolon = ts.next()
-            right = parse_basestatement(ts)
-            node = ASTNode(semicolon, children=[node, right])
-        else:
-            break
-    return node
-
-def parse_basestatement(ts: TokenStream):
-    token = ts.peek()
-    if token is None:
-        raise Exception("Unexpected end of input while parsing basestatement.")
-    if token[1] == "KEYWORD":
-        if token[0] == "if":
-            return parse_ifstatement(ts)
-        elif token[0] == "while":
-            return parse_whilestatement(ts)
-        elif token[0] == "skip":
-            return ASTNode(ts.next())
-        else:
-            raise Exception(f"Unexpected keyword '{token[0]}' in basestatement.")
-    elif token[1] == "IDENTIFIER":
-        return parse_assignment(ts)
-    else:
-        raise Exception(f"Unexpected token {token} in basestatement.")
-
-def parse_assignment(ts: TokenStream):
-    ident = ts.expect(expected_type="IDENTIFIER")
-    op = ts.expect(expected_value=":=", expected_type="SYMBOL")
-    expr = parse_expression(ts)
-    return ASTNode(op, children=[ASTNode(ident), expr])
-
-def parse_ifstatement(ts: TokenStream):
-    ts.expect(expected_value="if", expected_type="KEYWORD")
-    condition = parse_expression(ts)
-    ts.expect(expected_value="then", expected_type="KEYWORD")
-    then_stmt = parse_statement(ts)
-    ts.expect(expected_value="else", expected_type="KEYWORD")
-    else_stmt = parse_statement(ts)
-    ts.expect(expected_value="endif", expected_type="KEYWORD")
-    return ASTNode(("IF-STATEMENT", "KEYWORD"), children=[condition, then_stmt, else_stmt])
-
-def parse_whilestatement(ts: TokenStream):
-    ts.expect(expected_value="while", expected_type="KEYWORD")
-    condition = parse_expression(ts)
-    ts.expect(expected_value="do", expected_type="KEYWORD")
-    body = parse_statement(ts)
-    ts.expect(expected_value="endwhile", expected_type="KEYWORD")
-    return ASTNode(("WHILE-LOOP", "KEYWORD"), children=[condition, body])
 
 def parse_tokens(tokens):
     ts = TokenStream(tokens)
-    ast = parse_statement(ts)
+    ast = parse_expression(ts)
     if ts.peek() is not None:
-        raise Exception(f"Extra token '{ts.peek()}' found after complete parsing.")
+        raise Exception(f"Extra token '{ts.peek()}' found after parsing complete expression.")
     return ast
 
+
 def collect_ast(node, indent=""):
-            lines = []
-            lines.append(f"{indent}{node.token[0]} : {node.token[1]}")
-            for child in node.children:
-                lines.extend(collect_ast(child, indent + "  "))
-            return lines
+    lines = []
+    lines.append(f"{indent}{node.token[0]} : {node.token[1]}")
+    for child in node.children:
+        lines.extend(collect_ast(child, indent + "  "))
+    return lines
 
 def isValidExpression(stack):
     return len(stack) >= 3 and stack[len(stack) - 1].token[1] == "NUMBER" and stack[len(stack) - 2].token[1] == "NUMBER" and stack[len(stack) - 3].token[1] == "SYMBOL"
 
-def push(node, stack = [], validCount):
+def push(node, stack = []):
     stack.append(node)
     top = len(stack) - 1
     if isValidExpression(stack):
@@ -223,7 +154,43 @@ def push(node, stack = [], validCount):
 
 def evaluate(ast):
     stack = push(ast)
+    return eval(ast, stack)
+
+def eval(ast, stack):
+    if len(stack) == 0:
+        raise Exception("Unexpected end of input while evaluating AST.")
+
+    if len(stack) == 1:
+        return stack[0]
+
+    if len(stack) == 2:
+        raise Exception("Two values left in stack.")
+
     top = len(stack) - 1
+    if isValidExpression(stack):
+        symbol = stack[top - 2].token[1]
+        if symbol == "+":
+            stack.append(ASTNode((str(int(stack[top - 1].token[0]) + int(stack[top].token[0])), "NUMBER"), []))
+        elif symbol == "-":
+            stack.append(ASTNode((str(int(stack[top -1].token[0]) - int(stack[top].token[0])), "NUMBER"), []))
+            if int(stack[len(stack) - 1].token[0]) < 0:
+                stack[len(stack) - 1].token = ("0", "NUMBER")
+        elif symbol == "*":
+            stack.append(ASTNode((str(int(stack[top - 1].token[0]) * int(stack[top].token[0])), "NUMBER"), []))
+        elif symbol == "/":
+            try:
+                stack.append(ASTNode((str(int(stack[top - 1].token[0]) / int(stack[top].token[0])), "NUMBER"), []))
+            except ZeroDivisionError:
+                raise Exception("Division by zero")
+        else:
+            raise Exception(f"Unknown symbol '{symbol}'")
+        stack.pop(top - 2)
+        stack.pop(top - 2)
+        stack.pop(top - 2)
+    else:
+        stack = push(ast, stack)
+
+    return eval(ast, stack)
     
 
 if __name__ == "__main__":
@@ -260,10 +227,11 @@ if __name__ == "__main__":
         ast_lines = collect_ast(ast)
         output_lines.extend(ast_lines)
 
+        print(evaluate(ast))
+
     except Exception as e:
         output_lines.append("Error: " + str(e))
 
     with open(output_file, 'w') as o:
         for line in output_lines:
             o.write(line + "\n")
-    evaluate(ast)
