@@ -12,18 +12,15 @@ import sys
 import re
 from parser_2_1 import *
 
-
 def isValidExpression(stack):
-    return len(stack) >= 3 and stack[len(stack) - 1].token[1] == "NUMBER" and stack[len(stack) - 2].token[
-        1] == "NUMBER" and stack[len(stack) - 3].token[1] == "SYMBOL"
-
+    return len(stack) >= 3 and stack[len(stack) - 1].token[1] == "NUMBER" and stack[len(stack) - 2].token[1] == "NUMBER" and stack[len(stack) - 3].token[1] == "SYMBOL"
 
 class LinearAST:
     def __init__(self, ast):
         self.nodes = self.push(ast)
         self.index = self.getIndex()
 
-    def push(self, node, stack=[]):
+    def push(self, node, stack = []):
         stack.append(node)
         top = len(stack) - 1
         for child in node.children:
@@ -50,7 +47,6 @@ def evaluate(ast):
     stack = LinearAST(ast).getStack()
     return eval(linear, stack)
 
-
 def eval(linear, stack):
     if len(stack) == 0:
         raise Exception("Unexpected end of input while evaluating AST.")
@@ -67,7 +63,7 @@ def eval(linear, stack):
         if symbol == "+":
             stack.append(ASTNode((str(int(stack[top - 1].token[0]) + int(stack[top].token[0])), "NUMBER"), []))
         elif symbol == "-":
-            stack.append(ASTNode((str(int(stack[top - 1].token[0]) - int(stack[top].token[0])), "NUMBER"), []))
+            stack.append(ASTNode((str(int(stack[top -1].token[0]) - int(stack[top].token[0])), "NUMBER"), []))
             if int(stack[len(stack) - 1].token[0]) < 0:
                 stack[len(stack) - 1].token = ("0", "NUMBER")
         elif symbol == "*":
@@ -86,14 +82,12 @@ def eval(linear, stack):
         stack.append(linear.pop())
 
     return eval(linear, stack)
-
-
+    
 def stackToString(stack):
     string = ""
     for node in stack:
         string += str(node.token)
     return string
-
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
@@ -121,7 +115,7 @@ if __name__ == "__main__":
                     output_lines.append(f"{token[0]} : {token[1]}")
                 output_lines.append("")
                 all_tokens.extend(tokens)
-
+        
         output_lines.insert(0, "Tokens:")
         ast = parse_tokens(all_tokens)
 
