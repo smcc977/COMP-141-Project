@@ -10,7 +10,7 @@ to the output file.
 
 import sys
 import re
-from parser_2_1 import *
+from parser_2_2 import *
 
 memory = {}
 
@@ -100,11 +100,13 @@ def eval(linear, stack):
         stack.pop(top - 2)
         stack.pop(top - 2)
         stack.pop(top - 2)
-    elif isValidStatement(stack):
-        symbol = stack[top - 2].token[0]
-        if symbol == "+":
-            stack.append(ASTNode((str(int(stack[top - 1].token[0]) + int(stack[top].token[0])), "NUMBER"), []))
-        elif symbol == "-":
+    elif isValidIf(stack):
+        keyword = stack[top - 2].token[0]
+        value0 = stack[top]
+        value1 = stack[top - 1]
+        if keyword == "if":
+            #evaluate if function
+        elif keyword == "else":
             stack.append(ASTNode((str(int(stack[top - 1].token[0]) - int(stack[top].token[0])), "NUMBER"), []))
             if int(stack[len(stack) - 1].token[0]) < 0:
                 stack[len(stack) - 1].token = ("0", "NUMBER")
