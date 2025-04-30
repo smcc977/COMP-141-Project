@@ -13,9 +13,6 @@ from parser_2_2 import *
 
 
 def eval_expr(node: ASTNode, memory: dict):
-    """
-    Recursively evaluate an expression AST and return its integer value.
-    """
     token, typ = node.token
     if typ == "NUMBER":
         return int(token)
@@ -23,7 +20,6 @@ def eval_expr(node: ASTNode, memory: dict):
         if token not in memory:
             raise Exception(f"Undefined identifier '{token}'")
         return int(memory[token])
-    # operator node: children [left, right]
     if token == '+':
         return int(eval_expr(node.children[0], memory) + eval_expr(node.children[1], memory))
     if token == '-':
@@ -40,9 +36,6 @@ def eval_expr(node: ASTNode, memory: dict):
 
 
 def flatten_sequence(node):
-    """
-    Flatten a tree of sequencing (';') nodes into a Python list of statement ASTNodes.
-    """
     if node.token[0] == ';':
         left, right = node.children
         return flatten_sequence(left) + flatten_sequence(right)
@@ -50,48 +43,35 @@ def flatten_sequence(node):
 
 
 def evaluate(ast):
-    """
-    Iteratively evaluates the AST by performing base-statement rewritings on a statement list.
-    Returns the final memory mapping identifiers to values.
-    """
     memory = {}
     stmts = flatten_sequence(ast)
     idx = 0
     while idx < len(stmts):
         stmt = stmts[idx]
         op, typ = stmt.token
-        # Assignment
         if op == ':=':
             ident_node, expr_node = stmt.children
             val = eval_expr(expr_node, memory)
             memory[ident_node.token[0]] = val
-            # remove this statement
             stmts.pop(idx)
             continue
-        # If-statement
         if op == 'IF-STATEMENT':
             cond, then_stmt, else_stmt = stmt.children
             cond_val = eval_expr(cond, memory)
             branch = then_stmt if cond_val > 0 else else_stmt
-            # replace this stmt with branch flattened
             stmts.pop(idx)
             stmts[idx:idx] = flatten_sequence(branch)
             continue
-        # While-loop
         if op == 'WHILE-LOOP':
             cond, body = stmt.children
             cond_val = eval_expr(cond, memory)
-            # if true, execute body then re-add loop
             stmts.pop(idx)
             if cond_val > 0:
                 stmts[idx:idx] = flatten_sequence(body) + [stmt]
-            # else drop loop by not re-inserting
             continue
-        # Skip
         if op == 'skip':
             stmts.pop(idx)
             continue
-        # Unknown node
         raise Exception(f"Unexpected statement node '{op}' in evaluation")
     return memory
 
@@ -108,7 +88,6 @@ if __name__ == "__main__":
     output_lines = []
 
     try:
-        # Scan tokens
         with open(input_file, 'r') as infile:
             for line in infile:
                 text = line.rstrip("\n")
@@ -123,13 +102,11 @@ if __name__ == "__main__":
 
         output_lines.insert(0, "Tokens:")
 
-        # Parse AST
         ast = parse_tokens(all_tokens)
         output_lines.append("AST:")
         for line in collect_ast(ast):
             output_lines.append(line)
 
-        # Evaluate
         memory = evaluate(ast)
         output_lines.append("")
         output_lines.append("Output:")
@@ -139,7 +116,6 @@ if __name__ == "__main__":
     except Exception as e:
         output_lines.append("Error: " + str(e))
 
-    # Write to output
     with open(output_file, 'w') as outfile:
         for line in output_lines:
             outfile.write(line + "\n")
