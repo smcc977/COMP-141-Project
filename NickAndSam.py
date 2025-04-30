@@ -1,6 +1,6 @@
 """
 COMP 141: Course Project
-Phase 3.1: Evaluator for Lexp
+Phase 3.2: Evaluator for Lexp
 
 This program integrates a scanner (Phase 1.2) and a parser for Lexp.
 It reads an input file (with a single expression), tokenizes it, and then parses
@@ -12,10 +12,17 @@ import sys
 import re
 from parser_2_1 import *
 
+memory = {}
 
 def isValidExpression(stack):
-    return len(stack) >= 3 and stack[len(stack) - 1].token[1] == "NUMBER" and stack[len(stack) - 2].token[
-        1] == "NUMBER" and stack[len(stack) - 3].token[1] == "SYMBOL"
+    return (len(stack) >= 3 and (stack[len(stack) - 1].token[1] == "NUMBER" or stack[len(stack) - 1].token[1] == "IDENTIFIER")
+            and (stack[len(stack) - 2].token[1] == "NUMBER" or stack[len(stack) - 2].token[1] == "IDENTIFIER")
+            and stack[len(stack) - 3].token[1] == "SYMBOL")
+
+def isValidStatement(stack):
+    return (len(stack) >= 3 and (stack[len(stack) - 1].token[1] == "NUMBER" or stack[len(stack) - 1].token[1] == "IDENTIFIER")
+            and (stack[len(stack) - 2].token[1] == "NUMBER" or stack[len(stack) - 2].token[1] == "IDENTIFIER")
+            and stack[len(stack) - 3].token[1] == "KEYWORD")
 
 
 class LinearAST:
@@ -63,6 +70,37 @@ def eval(linear, stack):
 
     top = len(stack) - 1
     if isValidExpression(stack):
+        symbol = stack[top - 2].token[0]
+        value0 = stack[top]
+        value1 = stack[top - 1]
+        if value0.token[1] == "IDENTIFIER":
+            value0 = ASTNode(str(memory[value0.token[0]], "NUMBER"), [])
+        if value1.token[1] == "IDENTIFIER":
+            value1 = ASTNode(str(memory[value1.token[0]], "NUMBER"), [])
+        if symbol == "+":
+            stack.append(ASTNode((str(int(value1.token[0]) + int(value0.token[0])), "NUMBER"), []))
+        elif symbol == "-":
+            stack.append(ASTNode((str(int(value1.token[0]) - int(value0.token[0])), "NUMBER"), []))
+            if int(stack[len(stack) - 1].token[0]) < 0:
+                stack[len(stack) - 1].token = ("0", "NUMBER")
+        elif symbol == "*":
+            stack.append(ASTNode((str(int(value1.token[0]) * int(value0.token[0])), "NUMBER"), []))
+        elif symbol == "/":
+            try:
+                stack.append(ASTNode((str(int(value1.token[0]) // int(value0.token[0])), "NUMBER"), []))
+            except ZeroDivisionError:
+                raise Exception("Division by zero")
+        elif symbol == ":=":
+            if value0.token[1] != "NUMBER":
+                raise Exception("Assigning invalid type to an identifier.")
+            memory.update({value1.token[0]: value0.token[0]})
+            stack.append(ASTNode(str(value1.token[0], "SYMBOL"), []))
+        else:
+            raise Exception(f"Unknown symbol '{symbol}'")
+        stack.pop(top - 2)
+        stack.pop(top - 2)
+        stack.pop(top - 2)
+    elif isValidStatement(stack):
         symbol = stack[top - 2].token[0]
         if symbol == "+":
             stack.append(ASTNode((str(int(stack[top - 1].token[0]) + int(stack[top].token[0])), "NUMBER"), []))
