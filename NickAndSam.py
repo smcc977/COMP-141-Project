@@ -2,10 +2,9 @@
 COMP 141: Course Project
 Phase 3.2: Evaluator for Lexp
 
-This program integrates a scanner (Phase 1.2) and a parser for Lexp.
-It reads an input file (with a single expression), tokenizes it, and then parses
-the tokens to build an abstract syntax tree (AST). The tokens and AST are printed
-to the output file.
+This program integrates a scanner (Phase 1.2) and a parser (Phase 2.2) for Lexp.
+It reads an input file, tokenizes it, and then parses the tokens to build an abstract syntax tree (AST).
+The program then evaluates the AST and writes the results to an output file.
 """
 
 import sys
