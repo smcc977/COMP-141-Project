@@ -9,135 +9,96 @@ to the output file.
 """
 
 import sys
-import re
 from parser_2_2 import *
 
-memory = {}
 
-def isValidExpression(stack):
-    return (len(stack) >= 3 and (stack[len(stack) - 1].token[1] == "NUMBER" or stack[len(stack) - 1].token[1] == "IDENTIFIER")
-            and (stack[len(stack) - 2].token[1] == "NUMBER" or stack[len(stack) - 2].token[1] == "IDENTIFIER")
-            and stack[len(stack) - 3].token[1] == "SYMBOL")
+def eval_expr(node: ASTNode, memory: dict):
+    """
+    Recursively evaluate an expression AST and return its integer value.
+    """
+    token, typ = node.token
+    if typ == "NUMBER":
+        return int(token)
+    if typ == "IDENTIFIER":
+        if token not in memory:
+            raise Exception(f"Undefined identifier '{token}'")
+        return int(memory[token])
+    # operator node: children [left, right]
+    if token == '+':
+        return int(eval_expr(node.children[0], memory) + eval_expr(node.children[1], memory))
+    if token == '-':
+        res = eval_expr(node.children[0], memory) - eval_expr(node.children[1], memory)
+        return int(res if res >= 0 else 0)
+    if token == '*':
+        return int(eval_expr(node.children[0], memory) * eval_expr(node.children[1], memory))
+    if token == '/':
+        denom = eval_expr(node.children[1], memory)
+        if denom == 0:
+            raise Exception("Division by zero")
+        return int(eval_expr(node.children[0], memory) // denom)
+    raise Exception(f"Unknown expression node '{token}'")
 
-def isValidStatement(stack):
-    return (len(stack) >= 3 and (stack[len(stack) - 1].token[1] == "NUMBER" or stack[len(stack) - 1].token[1] == "IDENTIFIER")
-            and (stack[len(stack) - 2].token[1] == "NUMBER" or stack[len(stack) - 2].token[1] == "IDENTIFIER")
-            and stack[len(stack) - 3].token[1] == "KEYWORD")
 
-
-class LinearAST:
-    def __init__(self, ast):
-        self.nodes = self.push(ast)
-        self.index = self.getIndex()
-
-    def push(self, node, stack=[]):
-        stack.append(node)
-        top = len(stack) - 1
-        for child in node.children:
-            self.push(child, stack)
-        return stack
-
-    def pop(self):
-        value = self.nodes[self.index]
-        self.index += 1
-        return value
-
-    def getIndex(self):
-        for i in range(len(self.nodes)):
-            if isValidExpression(self.nodes[:i]):
-                return i
-        return len(self.nodes)
-
-    def getStack(self):
-        return self.nodes[:self.index]
+def flatten_sequence(node):
+    """
+    Flatten a tree of sequencing (';') nodes into a Python list of statement ASTNodes.
+    """
+    if node.token[0] == ';':
+        left, right = node.children
+        return flatten_sequence(left) + flatten_sequence(right)
+    return [node]
 
 
 def evaluate(ast):
-    linear = LinearAST(ast)
-    stack = LinearAST(ast).getStack()
-    return eval(linear, stack)
-
-
-def eval(linear, stack):
-    if len(stack) == 0:
-        raise Exception("Unexpected end of input while evaluating AST.")
-
-    if len(stack) == 1:
-        return stack[0]
-
-    if len(stack) == 2:
-        raise Exception("Two values left in stack.")
-
-    top = len(stack) - 1
-    if isValidExpression(stack):
-        symbol = stack[top - 2].token[0]
-        value0 = stack[top]
-        value1 = stack[top - 1]
-        if value0.token[1] == "IDENTIFIER":
-            value0 = ASTNode(str(memory[value0.token[0]], "NUMBER"), [])
-        if value1.token[1] == "IDENTIFIER":
-            value1 = ASTNode(str(memory[value1.token[0]], "NUMBER"), [])
-        if symbol == "+":
-            stack.append(ASTNode((str(int(value1.token[0]) + int(value0.token[0])), "NUMBER"), []))
-        elif symbol == "-":
-            stack.append(ASTNode((str(int(value1.token[0]) - int(value0.token[0])), "NUMBER"), []))
-            if int(stack[len(stack) - 1].token[0]) < 0:
-                stack[len(stack) - 1].token = ("0", "NUMBER")
-        elif symbol == "*":
-            stack.append(ASTNode((str(int(value1.token[0]) * int(value0.token[0])), "NUMBER"), []))
-        elif symbol == "/":
-            try:
-                stack.append(ASTNode((str(int(value1.token[0]) // int(value0.token[0])), "NUMBER"), []))
-            except ZeroDivisionError:
-                raise Exception("Division by zero")
-        elif symbol == ":=":
-            if value0.token[1] != "NUMBER":
-                raise Exception("Assigning invalid type to an identifier.")
-            memory.update({value1.token[0]: value0.token[0]})
-            stack.append(ASTNode(str(value1.token[0], "SYMBOL"), []))
-        else:
-            raise Exception(f"Unknown symbol '{symbol}'")
-        stack.pop(top - 2)
-        stack.pop(top - 2)
-        stack.pop(top - 2)
-    elif isValidIf(stack):
-        keyword = stack[top - 2].token[0]
-        value0 = stack[top]
-        value1 = stack[top - 1]
-        if keyword == "if":
-            #evaluate if function
-        elif keyword == "else":
-            stack.append(ASTNode((str(int(stack[top - 1].token[0]) - int(stack[top].token[0])), "NUMBER"), []))
-            if int(stack[len(stack) - 1].token[0]) < 0:
-                stack[len(stack) - 1].token = ("0", "NUMBER")
-        elif symbol == "*":
-            stack.append(ASTNode((str(int(stack[top - 1].token[0]) * int(stack[top].token[0])), "NUMBER"), []))
-        elif symbol == "/":
-            try:
-                stack.append(ASTNode((str(int(stack[top - 1].token[0]) // int(stack[top].token[0])), "NUMBER"), []))
-            except ZeroDivisionError:
-                raise Exception("Division by zero")
-        else:
-            raise Exception(f"Unknown symbol '{symbol}'")
-        stack.pop(top - 2)
-        stack.pop(top - 2)
-        stack.pop(top - 2)
-    else:
-        stack.append(linear.pop())
-
-    return eval(linear, stack)
-
-
-def stackToString(stack):
-    string = ""
-    for node in stack:
-        string += str(node.token)
-    return string
+    """
+    Iteratively evaluates the AST by performing base-statement rewritings on a statement list.
+    Returns the final memory mapping identifiers to values.
+    """
+    memory = {}
+    stmts = flatten_sequence(ast)
+    idx = 0
+    while idx < len(stmts):
+        stmt = stmts[idx]
+        op, typ = stmt.token
+        # Assignment
+        if op == ':=':
+            ident_node, expr_node = stmt.children
+            val = eval_expr(expr_node, memory)
+            memory[ident_node.token[0]] = val
+            # remove this statement
+            stmts.pop(idx)
+            continue
+        # If-statement
+        if op == 'IF-STATEMENT':
+            cond, then_stmt, else_stmt = stmt.children
+            cond_val = eval_expr(cond, memory)
+            branch = then_stmt if cond_val > 0 else else_stmt
+            # replace this stmt with branch flattened
+            stmts.pop(idx)
+            stmts[idx:idx] = flatten_sequence(branch)
+            continue
+        # While-loop
+        if op == 'WHILE-LOOP':
+            cond, body = stmt.children
+            cond_val = eval_expr(cond, memory)
+            # if true, execute body then re-add loop
+            stmts.pop(idx)
+            if cond_val > 0:
+                stmts[idx:idx] = flatten_sequence(body) + [stmt]
+            # else drop loop by not re-inserting
+            continue
+        # Skip
+        if op == 'skip':
+            stmts.pop(idx)
+            continue
+        # Unknown node
+        raise Exception(f"Unexpected statement node '{op}' in evaluation")
+    return memory
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print("Usage: python parser.py <input_file> <output_file>")
+        print("Usage: python evaluator_3_2.py <input_file> <output_file>")
         sys.exit(1)
 
     input_file = sys.argv[1]
@@ -147,34 +108,38 @@ if __name__ == "__main__":
     output_lines = []
 
     try:
-        with open(input_file, 'r') as i:
-            for line in i:
-                line = line.rstrip("\n")
-                tokens = parseLine(line)
-                if tokens == []:
+        # Scan tokens
+        with open(input_file, 'r') as infile:
+            for line in infile:
+                text = line.rstrip("\n")
+                tokens = parseLine(text)
+                if not tokens:
                     continue
-                output_lines.append("Line: " + line)
-                for token in tokens:
-                    if token[1] == "ERROR READING":
-                        output_lines.append(f"Error: could not read token '{token[0]}' in line: {line}")
-                        raise Exception("Scanning error encountered.")
-                    output_lines.append(f"{token[0]} : {token[1]}")
+                output_lines.append("Line: " + text)
+                for val, typ in tokens:
+                    output_lines.append(f"{val} : {typ}")
                 output_lines.append("")
                 all_tokens.extend(tokens)
 
         output_lines.insert(0, "Tokens:")
+
+        # Parse AST
         ast = parse_tokens(all_tokens)
-
         output_lines.append("AST:")
-        ast_lines = collect_ast(ast)
-        output_lines.extend(ast_lines)
+        for line in collect_ast(ast):
+            output_lines.append(line)
 
-        output = evaluate(ast)
-        output_lines.append(f"\nOutput: {output.token[0]}")
+        # Evaluate
+        memory = evaluate(ast)
+        output_lines.append("")
+        output_lines.append("Output:")
+        for name, val in memory.items():
+            output_lines.append(f"{name} = {val}")
 
     except Exception as e:
         output_lines.append("Error: " + str(e))
 
-    with open(output_file, 'w') as o:
+    # Write to output
+    with open(output_file, 'w') as outfile:
         for line in output_lines:
-            o.write(line + "\n")
+            outfile.write(line + "\n")
